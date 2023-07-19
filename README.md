@@ -6,35 +6,9 @@ This example shows how to connect a [Vaadin](https://vaadin.com) application to 
 
 # Preparing the database
 
-You need MongoDB listening on port 27017 or a MariaDB database and a MaxScale instance.
+You need MongoDB listening on port 27017 or a MariaDB database and a MaxScale instance with a Listener using the `nosqlprotocol` protocol.
 
 ## Setting up the database cluster using Docker
-
-Clone the following repository which contains Docker files to set up MariaDB replication and MaxScale:
-
-```
-git clone https://github.com/alejandro-du/mariadb-docker-deployments.git
-```
-
-Build the images (don't use these in production environments):
-
-```
-cd mariadb-docker-deployments
-docker build --file single-node/Dockerfile --tag alejandrodu/mariadb-single-node .
-docker build --file primary/Dockerfile --tag alejandrodu/mariadb-primary .
-docker build --file replica/Dockerfile --tag alejandrodu/mariadb-replica .
-docker build --file maxscale/Dockerfile --tag alejandrodu/mariadb-maxscale .
-```
-
-Alternatively, you can use the **build.sh** script if you are on Linux.
-
-Run the containers:
-
-```
-docker compose up -d
-```
-
-## Run the web application
 
 Clone this repository:
 
@@ -42,10 +16,24 @@ Clone this repository:
 git clone https://github.com/alejandro-du/mongodb-vaadin-demo.git
 ```
 
-Build the Java web application using Maven:
+Spin up a MariaDB database cluster with one primary node and two replicas plus a database proxy (MaxScale):
 
 ```
 cd mongodb-vaadin-demo
+docker compose up -d
+```
+
+Create a NoSQL listener in MaxScale:
+
+```
+docker exec -it mongodb-vaadin-demo-maxscale-1 maxctrl create listener query_router_service nosql_listener 27017 protocol=nosqlprotocol 'nosqlprotocol={"user":"user", "password":"Password123!"}'
+```
+
+## Run the web application
+
+Build the Java web application using Maven:
+
+```
 mvn package
 ```
 
@@ -79,8 +67,22 @@ Or use [MariaDB's JSON functions](https://mariadb.com/resources/blog/using-json-
 ```sql
 select
 	json_value(doc, '$.firstName') as firstName,
-	json_value(doc, '$.lastName') as lastName
+	json_value(doc, '$.lastName') as lastName,
+	id as regNumber
 from student
+```
+
+Or if you want to join data with other tables in the database:
+
+```sql
+select s.*, st.id regNumber
+from student st,
+    json_table(st.doc, '$'
+        columns(
+            firstName varchar(255) path '$.firstName',
+            lastName varchar(255) path '$.lastName'
+        )
+    ) as s
 ```
 
 To shutdown the database cluster run:

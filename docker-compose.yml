@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  server-1:
+    image: alejandrodu/mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      - MARIADB_CREATE_DATABASE=demo
+      - MARIADB_CREATE_USER=user:Password123!
+      - MARIADB_CREATE_REPLICATION_USER=replication_user:ReplicationPassword123!
+      - MARIADB_CREATE_MAXSCALE_USER=maxscale_user:MaxScalePassword123!
+
+  server-2:
+    image: alejandrodu/mariadb
+    ports:
+      - "3307:3306"
+    environment:
+      - MARIADB_REPLICATE_FROM=replication_user:ReplicationPassword123!@server-1:3306
+
+  server-3:
+    image: alejandrodu/mariadb
+    ports:
+      - "3308:3306"
+    environment:
+      - MARIADB_REPLICATE_FROM=replication_user:ReplicationPassword123!@server-1:3306
+
+  maxscale:
+    image: alejandrodu/mariadb-maxscale
+    command: --admin_host 0.0.0.0 --admin_secure_gui false
+    ports:
+      - "4000:4000"
+      - "8989:8989"
+      - "27017:27017"
+    environment:
+      - MAXSCALE_USER=maxscale_user:MaxScalePassword123!
+      - MARIADB_HOST_1=server-1 3306
+      - MARIADB_HOST_2=server-2 3306
+      - MARIADB_HOST_3=server-3 3306

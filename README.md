@@ -66,9 +66,9 @@ Or use [MariaDB's JSON functions](https://mariadb.com/resources/blog/using-json-
 
 ```sql
 select
-	json_value(doc, '$.firstName') as firstName,
-	json_value(doc, '$.lastName') as lastName,
-	id as regNumber
+    json_value(doc, '$.firstName') as firstName,
+    json_value(doc, '$.lastName') as lastName,
+    id as regNumber
 from student
 ```
 

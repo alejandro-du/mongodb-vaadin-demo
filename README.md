@@ -16,18 +16,14 @@ Clone this repository:
 git clone https://github.com/alejandro-du/mongodb-vaadin-demo.git
 ```
 
-Spin up a MariaDB database cluster with one primary node and two replicas plus a database proxy (MaxScale):
+Spin up a MariaDB database and a database proxy (MaxScale):
 
 ```
 cd mongodb-vaadin-demo
 docker compose up -d
 ```
 
-Create a NoSQL listener in MaxScale:
-
-```
-docker exec -it mongodb-vaadin-demo-maxscale-1 maxctrl create listener query_router_service nosql_listener 27017 protocol=nosqlprotocol 'nosqlprotocol={"user":"user", "password":"Password123!"}'
-```
+__WARNING!__ These Docker images are not suitable for production!
 
 ## Run the web application
 
@@ -66,9 +62,9 @@ Or use [MariaDB's JSON functions](https://mariadb.com/resources/blog/using-json-
 
 ```sql
 select
-    json_value(doc, '$.firstName') as firstName,
-    json_value(doc, '$.lastName') as lastName,
-    id as regNumber
+	json_value(doc, '$.firstName') as firstName,
+	json_value(doc, '$.lastName') as lastName,
+	id as regNumber
 from student
 ```
 

@@ -2,6 +2,7 @@ version: "3.9"
 services:
   mariadb:
     image: alejandrodu/mariadb
+    container_name: mariadb
     environment:
       - MARIADB_CREATE_DATABASE=demo
       - MARIADB_CREATE_USER=user:Password123!
@@ -9,6 +10,7 @@ services:
 
   maxscale:
     image: alejandrodu/mariadb-maxscale
+    container_name: maxscale
     command: --admin_host 0.0.0.0 --admin_secure_gui false
     ports:
       - "3306:4000"
